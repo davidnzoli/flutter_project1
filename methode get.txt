@@ -1,0 +1,125 @@
+
+ void initState() {
+    getData();
+    super.initState();
+  }
+
+Future<void> getData() async {
+    final url =
+        'http://localhost/APIExamlic3liage/distributions/get/getAll.php';
+    final uri = Uri.parse(url);
+    final response = await http.get(uri);
+    // print(response.statusCode);
+    // print(response.body);
+
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body) as Map;
+      final result = json[''] as List;
+    }
+  }
+
+///-----------------------------------------------------------------------------Shoose Date------------------
+
+Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(datechoose == null
+                          ? "Date de reservation"
+                          : DateFormat("EEE, d MMM, y").format(datechoose!)),
+                      TextButton(
+                          onPressed: () {
+                            showDatePicker(
+                                    context: context,
+                                    initialDate: DateTime.now(),
+                                    firstDate: DateTime(2024),
+                                    lastDate: DateTime.now())
+                                .then((valeur) {
+                              if (valeur == null) {
+                                return;
+                              }
+                              setState(() => {datechoose = valeur});
+                            });
+                          },
+                          child: const Text("choose")),
+                    ],
+                  ),
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+Bien sûr ! Voici un exemple de graphique en courbes en Flutter que vous pouvez utiliser comme point de départ pour afficher des données de manière élégante. Nous allons utiliser la bibliothèque FL Chart pour créer ce graphique.
+
+Ajoutez la dépendance FL Chart à votre fichier pubspec.yaml :
+dependencies:
+  fl_chart: ^0.45.0
+
+Créez un graphique en courbes avec les données que vous souhaitez afficher. Voici un exemple de widget qui affiche un graphique en courbes pour les actions d’une entreprise :
+Dart
+
+import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
+
+class LineChartWidget extends StatelessWidget {
+  final List<FlSpot> points;
+  final bool isPositiveChange;
+
+  const LineChartWidget(this.points, this.isPositiveChange, {Key? key})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return AspectRatio(
+      aspectRatio: 2,
+      child: LineChart(
+        LineChartData(
+          lineBarsData: [
+            LineChartBarData(
+              spots: points,
+              isCurved: false,
+              colors: [isPositiveChange ? Colors.green : Colors.red],
+              dotData: FlDotData(show: false),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+Code généré par l'IA. Examinez et utilisez soigneusement. Plus d'informations sur la FAQ.
+Utilisez le widget LineChartWidget dans votre application pour afficher vos données. Vous pouvez personnaliser les couleurs, les styles et les animations selon vos préférences.
+N’oubliez pas d’adapter ce code à vos besoins spécifiques et d’ajouter vos propres données pour obtenir un graphique personnalisé ! 📈
+
+////////////////////////////
+
+create VIEW infos AS
+select nomClient,adresseClient,telephoneClient,numerochambre,categoriechambre,datedebut,datefin,
+CASE when CURRENT_DATE < datefin then 'occupe'
+when CURRENT_DATE >= datefin then 'libre' END as 'statut'
+from tclient inner join treservation on tclient.idClient = treservation.idClient
+
+
+
+
+/////////////////////////////////////////////////////
+
+create VIEW completes AS
+select nomClient,adresseClient,telephoneClient,numerochambre,categoriechambre,datedebut,datefin,tclient.idClient,
+CASE when categoriechambre = "VIP" then '150'
+when categoriechambre = "STANDARD" then '80' end as 'prix',
+case when datedebut is not null then datediff(datefin,datedebut) end AS 'delais',
+case when datediff(datefin,datedebut) >=1 then delais+prix end AS 'prix_total'
+from tclient inner join treservation on tclient.idClient = treservation.idClient
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+create VIEW complet_infos AS
+select nomClient,adresseClient,telephoneClient,numerochambre,categoriechambre,datedebut,datefin,tclient.idClient,
+CASE when categoriechambre = "VIP" then '150'
+when categoriechambre = "STANDARD" then '80' END as 'Prix'
+from tclient inner join treservation on tclient.idClient = treservation.idClient
+
+SELECT numerochambre FROM infos where statut='libre' 
+
+
+create view info AS
+SELECT tchambre.numeroChambre from tchambre INNER JOIN treservation on tchambre.numeroChambre = treservation.numeroChambre where tchambre.numeroChambre != treservation.numeroChambre

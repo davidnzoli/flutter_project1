@@ -1,0 +1,46 @@
+SELECT * FROM `tchambre` WHERE numeroChambre NOT IN (SELECT numeroChambre FROM treservation WHERE CURRENT_DATE BETWEEN datedebut and datefin)
+
+======================================================================================================
+
+SELECT CASE WHEN datedebut is not null THEN Prix * delais END AS prix_total FROM complet;
+
+======================================================================================================
+
+CREATE TRIGGER get_jour 
+ON treservation after insert  AS
+BEGIN 
+declare @datedebut date, @datefin date, @nombreJours BIGINT, @idClient INT
+
+select @nombreJours = (DATEDIFF(datefin,datedebut)),@idClient = idClient from inserted
+
+update treservation set delais = @nombreJours where idClient = @idClient
+end
+=======================================================================================================
+
+DELIMITER $$
+CREATE TRIGGER get_jours after insert 
+ON treservation FOR EACH ROW
+BEGIN 
+
+	 DECLARE nombreJours INT;
+    DECLARE idClient INT;
+    
+	 SET nombreJours = DATEDIFF(NEW.datefin, NEW.datedebut);
+    SET idClient = NEW.idClient;
+
+	update treservation set NEW.delais = nombreJours where NEW.idClient = idClient;
+END $$
+
+DELIMITER ;
+
+=========================================================================================
+select `db_reservation_hotel`.`tclient`.`nomClient` AS `nomClient`,`db_reservation_hotel`.`tclient`.`adresseClient` AS `adresseClient`,`db_reservation_hotel`.`tclient`.`telephoneClient` AS `telephoneClient`,`db_reservation_hotel`.`treservation`.`numeroChambre` AS `numeroChambre`,`db_reservation_hotel`.`treservation`.`categoriechambre` AS `categoriechambre`,`db_reservation_hotel`.`treservation`.`datedebut` AS `datedebut`,`db_reservation_hotel`.`treservation`.`datefin` AS `datefin`,(case when exists(select 1 from `db_reservation_hotel`.`treservation` where (curdate() between `db_reservation_hotel`.`treservation`.`datedebut` and `db_reservation_hotel`.`treservation`.`datefin`)) then 'occupe' when (not exists(select 1 from `db_reservation_hotel`.`treservation` where (curdate() between `db_reservation_hotel`.`treservation`.`datedebut` and `db_reservation_hotel`.`treservation`.`datefin`))) then 'libre' end) AS `statut` from (`db_reservation_hotel`.`tclient` join `db_reservation_hotel`.`treservation` on((`db_reservation_hotel`.`tclient`.`idClient` = `db_reservation_hotel`.`treservation`.`idClient`)))
+===============================================================================================
+
+ALTER VIEW infoss AS
+select `nomClient` AS `nomClient`,`adresseClient` AS `adresseClient`,`telephoneClient` AS `telephoneClient`,`numeroChambre` AS `numeroChambre`,`categoriechambre` AS `categoriechambre`,`datedebut` AS `datedebut`,`datefin` AS `datefin`,(
+case 
+when exists(
+    select 1 from `treservation` as reserv where (curdate() between reserv.`datedebut` and reserv.`datefin`) and reserv.numeroChambre=res.numeroChambre) then 'occupe' 
+when (not exists(select 1 from `treservation` where (curdate() between `datedebut` and `treservation`.`datefin`))) then 'libre' end) AS `statut` 
+from (`tclient` as cl join `treservation` as res on((cl.`idClient` = res.`idClient`)))

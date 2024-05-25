@@ -1,0 +1,143 @@
+import 'dart:convert';
+import 'dart:html';
+
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
+class Distribution extends StatefulWidget {
+  const Distribution({Key? key}) : super(key: key);
+
+  @override
+  State<Distribution> createState() => _DistributionState();
+}
+
+class _DistributionState extends State<Distribution> {
+  List list = [];
+
+  List listdist = [];
+  Future<void> getData() async {
+    final url =
+        'http://localhost/APIExamlic3liage/distributions/get/getAll.php';
+    final uri = Uri.parse(url);
+    final response = await http.get(uri);
+
+    setState(() {
+      listdist = json.decode(response.body) as List;
+      print(listdist);
+    });
+
+    // if (response.statusCode == 200) {
+    //   final json = jsonDecode(response.body) as Map;
+    //   final result = json['tbdistributions'] as List;
+    //   setState(() {
+    //     list = result;
+    //   });
+    // } else {}
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getData();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(
+          title: Text("Distribution"),
+          centerTitle: true,
+        ),
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Column(
+              children: [
+                SizedBox(
+                  height: 120,
+                ),
+                TextField(
+                  decoration: InputDecoration(
+                      hintText: "Enter Menage",
+                      labelText: "Rechercher Menage",
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(10)))),
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                TextButton(
+                  style: TextButton.styleFrom(
+                      primary: Colors.black,
+                      backgroundColor: Colors.white,
+                      textStyle: TextStyle(fontSize: 15)),
+                  onPressed: () {},
+                  child: Text("Search"),
+                  // color: Colors.blue,
+                ),
+                SizedBox(height: 20),
+                Text(
+                  'TABLE DE DISTRIBUTIONS',
+                  style: TextStyle(
+                      fontSize: 20,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500),
+                ),
+                Divider(
+                  height: 3,
+                ),
+                SingleChildScrollView(
+                  child: Container(
+                    height: 500,
+                    child: ListView.builder(
+                        itemCount: listdist.length,
+                        itemBuilder: (context, index) => Container(
+                              margin: EdgeInsets.only(
+                                bottom: 10,
+                              ),
+                              padding: EdgeInsets.all(10),
+                              decoration: BoxDecoration(color: Colors.white),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    ' ID MENAGE:  ${listdist[index]['idMen']}',
+                                    style: TextStyle(color: Colors.grey[700]),
+                                  ),
+                                  const SizedBox(
+                                    height: 5,
+                                  ),
+                                  Text(
+                                    ' RAPPORT:  ${listdist[index]['rapport']}',
+                                    style: TextStyle(color: Colors.grey[700]),
+                                  ),
+                                ],
+                              ),
+                            )),
+                  ),
+                )
+              ],
+            ),
+          ),
+        ));
+  }
+
+  void showSuccessMessage(String message) {
+    final snackBar = SnackBar(content: Text(message));
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+  void showErrorMessage(String message) {
+    final snackBar = SnackBar(
+      content: Text(
+        message,
+        style: TextStyle(color: Colors.white),
+      ),
+      backgroundColor: Colors.red,
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+  //API GET DATA
+
+}
